@@ -62,7 +62,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
             $or : [{username},{email}]
         });
         if(!user){
-            throw new ApiError(404, "User does not exist")
+            throw new ApiError(404, "User with email or username does not exist")
         }
 
         const hashedPassword = user.password;
@@ -87,14 +87,92 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 
         const cookieOptions = {
             httpOnly: true,
-            secure: true,
+            maxAge: 5 * 60 * 1000,
+            secure: false,
         }
 
-        return res.status(200).cookie("accessToken", token, cookieOptions).json(ApiResponse.create(200, loggedInUser, "user loggedin successfully"));
+        return res.status(200).cookie("accessToken", token, cookieOptions).json(ApiResponse.create(200, loggedInUser, "user login successfully"));
 
     } catch (error) {
         next(error);
     }
 }
 
-export { registerUser, loginUser };
+const getCurrentUser = async(req: Request, res: Response, next: NextFunction) =>  {
+    try {
+        const user = req.user;
+
+        return res.status(200).json(ApiResponse.create(200, {"user":user}, "User details fetched successfully" ));
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+        if(!user){
+            throw new ApiError(401, "Unauthorized")
+        }
+        const cookieOptions = {
+            httpOnly: true,
+            secure: false,
+        }
+        return res.status(200).clearCookie("accessToken", cookieOptions).json(ApiResponse.create(200, {}, "User logout successfuly"))
+    } catch (error) {
+        
+    }
+}
+
+const getAllUser = async (req: Request, res: Response, next:NextFunction) => {
+    try {
+        const user = req.user;
+    
+        if(user?.role !== 'admin'){
+            throw new ApiError(401, "Only admin can fetch user's details");
+        }
+    
+        const allUsers = await UserModel.find({}, "-password");
+    
+        const filteredUsers = allUsers.filter((user) => user.role !== 'admin');
+        
+        return res.status(200).json(ApiResponse.create(200, filteredUsers, 'All user fetched successfully'));
+    } catch (error) {
+        next(error);
+    }
+}
+
+const changePassword = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {oldPassword, newPassword, confirmPassword} = req.body;
+
+        if(!oldPassword || !newPassword || !confirmPassword){
+            throw new ApiError(400, "All fields are required: oldPassword, newPassword, confirmPassword")
+        }
+
+        if(newPassword !== confirmPassword ){
+            throw new ApiError(400, 'value of newPassword and confirmPassword are different');
+        }
+        const loggedInUser = req.user;
+        const user = await UserModel.findById(loggedInUser?._id);
+
+        const userOldPassword : string = String(user?.password);
+
+        const isPasswordValid = await BcryptWrapper.compare(oldPassword, userOldPassword);
+        if(!isPasswordValid){
+            throw new ApiError(401, 'Invalid old password');
+        }
+
+        const hashedPassword = await BcryptWrapper.hash(newPassword);
+
+        const updatedUser = await UserModel.findByIdAndUpdate(user?._id, {password: hashedPassword});
+
+        return res.status(200).json(ApiResponse.create(200, {}, 'Password changed successfully'))
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+export { registerUser, loginUser, getCurrentUser, logout, getAllUser, changePassword };
