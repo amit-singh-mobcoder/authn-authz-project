@@ -1,3 +1,4 @@
+import mongoose, {isValidObjectId} from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
 import express, { NextFunction, Request, Response } from 'express';
 import { ApiError } from "../utils/ApiError";
@@ -16,7 +17,7 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
 
         // Check if all required fields are present
         if ([firstName, lastName, username, email, password].some((item: string) => !item.trim())) {
-            throw new ApiError(StatusHelper.error400BadRequest, "All fields are required.");
+            throw new ApiError(StatusHelper.error400BadRequest, "All fields are required");
         }
 
         // Check if the user with the provided username or email already exists
@@ -24,7 +25,7 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
             $or: [{ username }, { email }]
         });
         if (existedUser) {
-            throw new ApiError(StatusHelper.error409Conflict, 'User with email or username already exists.');
+            throw new ApiError(StatusHelper.error409Conflict, 'User with email or username already exists');
         }
 
         // Hash the user's password
@@ -129,7 +130,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-// PAGINATION IMPLEMENT
+// PAGINATION IMPLEMENT // ADMIN PROTECTED ROUTE
 const getAllUser = async (req: Request, res: Response, next:NextFunction) => {
     try {
         const user = req.user;
@@ -157,6 +158,31 @@ const getAllUser = async (req: Request, res: Response, next:NextFunction) => {
         const filteredUsers = allUsers.filter((user) => user.role !== 'admin');
         
         return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, {allUsers, totalPages, page}, 'All user fetched successfully'));
+    } catch (error) {
+        next(error);
+    }
+}
+
+// ADMIN PROTECTED ROUTE
+const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user: any = req.user;
+        if(user.role !== 'admin') {
+            throw new ApiError(StatusHelper.error401Unauthorized, 'Unauthorized Request, Admin protected route')
+        }
+
+        // Extract userId from params
+        const {userId} = req.params;
+
+        if(!(isValidObjectId(userId))){
+            throw new ApiError(StatusHelper.error400BadRequest, 'userId is not valid')
+        }
+        
+        // now delete the user from db
+        await UserModel.findByIdAndDelete(userId);
+
+        return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok,{}, 'user deleted successfully'))
+
     } catch (error) {
         next(error);
     }
@@ -328,6 +354,7 @@ export { registerUser,
          logout, 
          getAllUser, 
          changePassword, 
-         forgotPassword, verifyOTP, resetPassword 
+         forgotPassword, verifyOTP, resetPassword,
+         deleteUser 
 
 };

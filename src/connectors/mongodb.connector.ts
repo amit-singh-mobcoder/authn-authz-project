@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
-import { ConstantHelper } from "../constants";
+import { ConstantHelper, mongooseOptions } from "../constants";
 
 class MongoDbConnector {
     public uri: string;
+    private _mongooseOptions: object = mongooseOptions;
 
     constructor(uri: string){
         if(!uri) {
@@ -13,7 +14,7 @@ class MongoDbConnector {
     
     async connect(){
         try {
-            const connectionInstance = await mongoose.connect(`${this.uri}/${ConstantHelper.DB_NAME}`);
+            const connectionInstance = await mongoose.connect(`${this.uri}/${ConstantHelper.DB_NAME}`, this._mongooseOptions);
             console.log(`MongoDb connection successfull DB-HOST : ${connectionInstance.connection.host}`);
         } catch (error) {
             console.error('MongoDb connection failed !! Error : ',error);

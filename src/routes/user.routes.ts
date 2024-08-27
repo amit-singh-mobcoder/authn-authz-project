@@ -1,7 +1,7 @@
 import express, {Router} from 'express'
 const router = Router();
 
-import { registerUser, loginUser, getCurrentUser, logout, getAllUser, changePassword, forgotPassword, verifyOTP, resetPassword } from '../controllers/user.controller';
+import { registerUser, loginUser, getCurrentUser, logout, getAllUser, changePassword, forgotPassword, verifyOTP, resetPassword, deleteUser } from '../controllers/user.controller';
 import { verifyJWT } from '../middlewares/auth.middleware';
 
 
@@ -17,7 +17,8 @@ router.route('/reset-password/:token').patch(resetPassword);
 
 
 
-// protected route only for admin
+// admin protected routes
 router.route('/').get(verifyJWT, getAllUser);
+router.route('/delete/:userId').post(verifyJWT, deleteUser);
 
 export default router;

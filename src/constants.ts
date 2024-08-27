@@ -9,3 +9,13 @@ export abstract class ConstantHelper {
     public static mail_user: string = String(process.env.MAIL_USER);
     public static mail_pass: string = String(process.env.MAIL_PASS); 
 }
+
+interface IMongooseOptions {
+    serverSelectionTimeoutMS: number,
+    socketTimeoutMS: number,
+}
+
+export const mongooseOptions: IMongooseOptions = {
+    serverSelectionTimeoutMS: 30000, // Adjust this as needed
+    socketTimeoutMS: 30000, // Adjust this as needed
+}

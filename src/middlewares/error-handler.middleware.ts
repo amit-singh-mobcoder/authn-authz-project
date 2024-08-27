@@ -14,7 +14,7 @@ const errorHandler = (err: ApiError | Error, req: Request, res: Response, next: 
             success: false,
             message: 'Internal Server Error',
             stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-        });
+        });     
     }
 };
 
