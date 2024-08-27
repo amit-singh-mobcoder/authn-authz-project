@@ -139,13 +139,24 @@ const getAllUser = async (req: Request, res: Response, next:NextFunction) => {
         }
 
         // PAGINATION
-        const page = parseInt(req.query.page) || 1;
+        const page = Number(req.query.page) || 1;
+        const perPage = 3;
+        const totalUsers = await UserModel.countDocuments();
+        const totalPages = Math.ceil(totalUsers / perPage);
+
+        // handling the error for the case when user passed a page number in a query param which is greater than our total pages value.
+        if(page > totalPages){
+            throw new ApiError(StatusHelper.error400BadRequest, 'page value exceed the totalPage count')
+        }
     
-        const allUsers = await UserModel.find({}, "-password");
+        const allUsers = await UserModel.find({}, "-password")
+        .skip((page - 1) * perPage)
+        .limit(perPage)
+        .exec();
     
         const filteredUsers = allUsers.filter((user) => user.role !== 'admin');
         
-        return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, filteredUsers, 'All user fetched successfully'));
+        return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, {allUsers, totalPages, page}, 'All user fetched successfully'));
     } catch (error) {
         next(error);
     }
