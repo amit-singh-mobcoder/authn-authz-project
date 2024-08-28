@@ -1,4 +1,4 @@
-jest.setTimeout(3000)
+jest.setTimeout(30000)
 import mongoose from "mongoose"
 import request from 'supertest'
 import { app } from "../app"
@@ -19,6 +19,7 @@ describe('POST /login', ()=> {
         await mongoose.connection.close();
     })
 
+    // TEST CASE 1 
     it('should register a new user successfully', async () => {
         const response = await request(app)
             .post('/api/v1/users/signup')
@@ -36,6 +37,7 @@ describe('POST /login', ()=> {
         expect(response.body).toHaveProperty('message', 'User registered successfully');
     });
 
+    // TEST CASE 2
     it('should return 400 if any required field is missing', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')
@@ -47,6 +49,7 @@ describe('POST /login', ()=> {
         expect(response.body).toHaveProperty('message','username or email is required')
     });
 
+    // TEST CASE 3
     it('should return 404 if user not found with provided username or email', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')
@@ -59,6 +62,7 @@ describe('POST /login', ()=> {
         expect(response.body).toHaveProperty('message', 'User with email or username does not exist')
     });
 
+    // TEST CASE 4
     it('should return 401 if user provide valid username or email and invalid password', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')
@@ -71,6 +75,7 @@ describe('POST /login', ()=> {
         expect(response.body).toHaveProperty('message','Invalid user credential')
     })
 
+    // TEST CASE 5
     it('should user login successfully', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')

@@ -18,6 +18,7 @@ describe('POST /signup', () => {
         await mongoose.connection.close();
     });
 
+    // TEST CASE 1
     it('should register a new user successfully', async () => {
         const response = await request(app)
             .post('/api/v1/users/signup')
@@ -35,6 +36,7 @@ describe('POST /signup', () => {
         expect(response.body).toHaveProperty('message', 'User registered successfully');
     });
 
+    // TEST CASE 2
     it('should return 400 if any required field is missing', async () => {
         const response = await request(app)
             .post('/api/v1/users/signup')
@@ -51,18 +53,8 @@ describe('POST /signup', () => {
         expect(response.body).toHaveProperty('message', 'All fields are required');
     });
 
+    // TEST CASE 3
     it('should return 409 if the user already exists', async () => {
-
-        await UserModel.deleteOne({username: 'johndoe'})
-
-        await UserModel.create({
-            name: { firstName: 'John', lastName: 'Doe' },
-            username: 'johndoe',
-            email: 'johndoe@example.com',
-            password: 'hashedpassword123',
-            role: 'user'
-        });
-
         const response = await request(app)
             .post('/api/v1/users/signup')
             .send({
