@@ -18,7 +18,7 @@ const verifyJWT = async (req: Request, res: Response, next: NextFunction) => {
             throw new ApiError(401, "Unauthorized request");
         }
 
-        const secretKey = ConstantHelper.jwtSecretKey;
+        const secretKey = ConstantHelper.JWT_SECRET_KEY;
         const decodedToken = JwtWrapper.verify(token, secretKey);
 
         // Ensure decodedToken is an object with an id property

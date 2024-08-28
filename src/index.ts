@@ -4,7 +4,7 @@ import { ConstantHelper } from "./constants";
 
 MongoDbConnector.connect()
 .then(() => {
-    app.listen(ConstantHelper.port, () => {
-        console.log(`Server listening at http://localhost:${ConstantHelper.port}`);
+    app.listen(ConstantHelper.APP_PORT, () => {
+        console.log(`Server listening at http://localhost:${ConstantHelper.APP_PORT}`);
     })
 })

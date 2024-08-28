@@ -4,8 +4,8 @@ import { ConstantHelper } from '../constants';
 export class OtpMailer {
     private otp: string;
     private receiverEmail: string;
-    private userMail: string = ConstantHelper.mail_user;
-    private userPass: string = ConstantHelper.mail_pass;
+    private userMail: string = ConstantHelper.MAIL_USER;
+    private userPass: string = ConstantHelper.MAIL_PASS;
 
     constructor(otp: string, receiverEmail: string) {
         if (!otp) {

@@ -23,4 +23,4 @@ class MongoDbConnector {
     }
 }
 
-export default new MongoDbConnector(ConstantHelper.uri!);
+export default new MongoDbConnector(ConstantHelper.MOGOGO_URI!);
