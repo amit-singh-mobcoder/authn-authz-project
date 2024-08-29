@@ -1,30 +1,24 @@
 import { IUser, UserModel } from "../models/user.model";
-import { FilterQuery } from "mongoose";
 
-export class UserRepository {
+export default class UserRepository {
 
-  static async findOne(condition: FilterQuery<IUser>): Promise<IUser | null> {
-    const item = await UserModel.findOne(condition).exec();
-    return item;
+  async addUser(user: Partial<IUser>): Promise<IUser> {
+    const newUser = new UserModel(user);
+    return await newUser.save();
   }
 
-  static async create(data: Partial<IUser>): Promise<IUser> {
-    const user = await UserModel.create(data);
+  async findUserByEmail(email: string): Promise<IUser | null> {
+    const existedUser = await UserModel.findOne({email});
+    return existedUser;
+  }
+
+  async findUserByUsername(username: string): Promise<IUser| null> {
+    const existedUser = await UserModel.findOne({username});
+    return existedUser;
+  }
+
+  async findUserById(id: any): Promise<IUser | null> {
+    const user = await UserModel.findById(id);
     return user;
-  }
-
-  static async findById(id: any): Promise<IUser | null> {
-    const user = await UserModel.findById(id).select('-password').exec();
-    return user;
-  }
-
-  static async findByIdAndUpdate(id: any): Promise<IUser | null> {
-    const updatedUser = await UserModel.findByIdAndUpdate(id);
-    return updatedUser;
-  }
-
-  static async findByIdAndDelete(id: any): Promise<IUser | null> {
-    const deletedUser = await UserModel.findByIdAndDelete(id);
-    return deletedUser;
   }
 }

@@ -10,7 +10,34 @@ import { OtpWrapper } from "../wrappers/otp.wrapper";
 import { OtpModel } from "../models/otp.model";
 import { OtpMailer } from "../wrappers/otp-mail.wrapper";
 import { StatusHelper } from "../helpers/status.helper";
-import { UserRepository } from "../repositories/user.repository";
+import UserService from "../services/user.service";
+
+export default class UserController {
+    public userServices: UserService;
+
+    constructor(userServices: UserService) {
+        this.userServices = userServices;
+    }
+
+    async register(req: Request, res: Response, next: NextFunction){
+        try {
+            const user = await this.userServices.registerUser(req.body);
+            return res.status(StatusHelper.status201Created).json(ApiResponse.create(StatusHelper.status200Ok, user, 'User registered successfully'))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async login(req: Request, res: Response, next: NextFunction){
+        try {
+            const token = await this.userServices.loginUser(req.body)
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, token, 'User login successfully'))
+        } catch (error) {
+            next(error)
+        }
+    }
+}
+
 
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -22,11 +49,8 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
         }
 
         // Check if the user with the provided username or email already exists
-        // const existedUser = await UserModel.findOne({
-        //     $or: [{ username }, { email }]
-        // });
-        const existedUser = await UserRepository.findOne({
-            $or: [{username}, {email}]
+        const existedUser = await UserModel.findOne({
+            $or: [{ username }, { email }]
         });
 
         if (existedUser) {
@@ -37,24 +61,16 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
         const hashedPassword = await BcryptWrapper.hash(password);
 
         // Create the new user
-        // const user = await UserModel.create({
-        //     name: { firstName, lastName },
-        //     username,
-        //     email,
-        //     password: hashedPassword,
-        //     role
-        // });
-        const user = await UserRepository.create({
+        const user = await UserModel.create({
             name: { firstName, lastName },
             username,
             email,
             password: hashedPassword,
             role
-        })
+        });
 
         // Retrieve the created user without the password field
-        // const createdUser = await UserModel.findById(user._id).select("-password");
-        const createdUser = await UserRepository.findById(user._id)
+        const createdUser = await UserModel.findById(user._id).select("-password");
         if (!createdUser) {
             throw new ApiError(StatusHelper.error400BadRequest, 'Something went wrong while creating the user');
         }

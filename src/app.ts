@@ -3,6 +3,10 @@ import { ConstantHelper } from './constants';
 import bodyParser from 'body-parser';
 import errorHandler from './middlewares/error-handler.middleware';
 import cookieParser from 'cookie-parser'
+// import {UserRouter }from './routes/user.routes';
+import UserController from './controllers/user.controller';
+import UserService from './services/user.service';
+import UserRepository from './repositories/user.repository';
 
 const app : Application = express();
 app.use(express.json());
@@ -11,7 +15,16 @@ app.use(bodyParser.json())
 
 
 import UserRoutes from './routes/user.routes'
-app.use('/api/v1/users', UserRoutes);
+// app.use('/api/v1/users', UserRoutes);
+// console.log(UserRouter);
+
+// const userRepository = new UserRepository();
+// const userService = new UserService(userRepository);
+// const userController = new UserController(userService);
+// const userRoutes = new UserRouter()
+// console.log('user routes err ',userRoutes);
+// 
+app.use('/api/v1/users', UserRoutes)
 
 
 app.get('/', (req: Request, res: Response) => {
