@@ -3,6 +3,7 @@ import mongoose, { model } from "mongoose";
 export interface IOtp extends Document {
     email: string;
     otp: string;
+    otpExpiration: number
 }
 
 const otpSchema = new mongoose.Schema(
@@ -15,7 +16,8 @@ const otpSchema = new mongoose.Schema(
         otp: {
             type: String,
             required: true
-        }
+        },
+        otpExpiration: Number
     }
 );
 

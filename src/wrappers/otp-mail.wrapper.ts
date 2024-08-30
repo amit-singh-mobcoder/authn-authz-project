@@ -38,6 +38,7 @@ export class OtpMailer {
                     <h2>Security Code</h2>
                     <p>Please use the following security code for the account ${this.receiverEmail}.</p>
                     <p>Security code: <b>${this.otp}</b></p>
+                    <p>code is only valid for 5 minute.</p>
                 </div>
             `,
         };

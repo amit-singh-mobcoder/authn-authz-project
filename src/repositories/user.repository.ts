@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
 
 export default class UserRepository {
@@ -20,5 +21,10 @@ export default class UserRepository {
   async findUserById(id: any): Promise<IUser | null> {
     const user = await UserModel.findById(id);
     return user;
+  }
+
+  async updateUserPasswordById(id: ObjectId ,newPassword: string): Promise<IUser|null>{
+    const updatedUser = await UserModel.findByIdAndUpdate(id, {password: newPassword});
+    return updatedUser;
   }
 }

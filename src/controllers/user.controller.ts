@@ -30,10 +30,61 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction){
         try {
-            const token = await this.userServices.loginUser(req.body)
-            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, token, 'User login successfully'))
+            const loggedInUser = await this.userServices.loginUser(req.body)
+            const cookieOptions = {maxAge: 24*60*60* 1000} // 24 hours
+            return res.status(StatusHelper.status200Ok).cookie('accessToken', loggedInUser.token, cookieOptions).json(ApiResponse.create(StatusHelper.status200Ok, loggedInUser, 'User login successfully'))
         } catch (error) {
             next(error)
+        }
+    }
+
+    async currentUser(req: Request, res: Response, next: NextFunction){
+        try {
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, req.user, 'current user fetched successfully')) 
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction){
+        try {
+            return res.status(StatusHelper.status200Ok).clearCookie('accessToken').json(ApiResponse.create(StatusHelper.status200Ok, {}, 'User logout successfully'))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async changePassword(req: Request, res: Response, next: NextFunction){
+        try {
+            const loggedInUser = req.user;
+            const requestBody = {
+                oldPassword: req.body.oldPassword,
+                newPassword: req.body.newPassword,
+                confirmPassword: req.body.confirmPassword
+            }
+
+            const updatedUser = await this.userServices.changePassword(loggedInUser, requestBody);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, updatedUser, 'Password changed sucessfully'))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction){
+        try {
+            const output = await this.userServices.forgotPassword(req.body.email);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok,output,`Otp successfully sent`))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async verifyOtp(req: Request, res: Response, next: NextFunction){
+        try {
+            const token = await this.userServices.verifyOtp(req.body.email, req.body.otp);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, token, 'Otp verified successfully'))
+        } catch (error) {
+            
         }
     }
 }
