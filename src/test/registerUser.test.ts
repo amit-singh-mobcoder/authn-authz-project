@@ -67,6 +67,6 @@ describe('POST /signup', () => {
             });
 
         expect(response.status).toBe(409);
-        expect(response.body).toHaveProperty('message', 'User with email or username already exists');
+        expect(response.body).toHaveProperty('message', 'User with this email already exists');
     });
 });

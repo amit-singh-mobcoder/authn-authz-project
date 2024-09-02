@@ -46,33 +46,31 @@ describe('POST /login', ()=> {
             password: "password123"
         })
         expect(response.status).toBe(400)
-        expect(response.body).toHaveProperty('message','username or email is required')
+        expect(response.body).toHaveProperty('message','All fields are required, [email, password]')
     });
 
     // TEST CASE 3
-    it('should return 404 if user not found with provided username or email', async () => {
+    it('should return 404 if user not found with provided email', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')
         .send({
-            username:'johndoe1234',
             email: "johndoe@gmail.com",
             password: "password123"
         })
         expect(response.status).toBe(404)
-        expect(response.body).toHaveProperty('message', 'User with email or username does not exist')
+        expect(response.body).toHaveProperty('message', 'Invalid email, user with this email not found')
     });
 
     // TEST CASE 4
-    it('should return 401 if user provide valid username or email and invalid password', async () => {
+    it('should return 401 if user provide valid email and invalid password', async () => {
         const response = await request(app)
         .post('/api/v1/users/login')
         .send({
-            username:'johndoe',
             email: "johndoe@example.com",
             password:"1234"
         })
         expect(response.status).toBe(401)
-        expect(response.body).toHaveProperty('message','Invalid user credential')
+        expect(response.body).toHaveProperty('message','Invalid password')
     })
 
     // TEST CASE 5
@@ -80,12 +78,12 @@ describe('POST /login', ()=> {
         const response = await request(app)
         .post('/api/v1/users/login')
         .send({
-            username: 'johndoe',
+            email: "johndoe@example.com",
             password: 'password123'
         })
 
         expect(response.status).toBe(200)
-        expect(response.body).toHaveProperty('message','user login successfully')
+        expect(response.body).toHaveProperty('message','User login successfully')
     });
 
 })
