@@ -5,10 +5,10 @@ import { BcryptWrapper } from "../wrappers/bcrypt.wrapper";
 import { StatusHelper } from "../helpers/status.helper";
 import { ConstantHelper } from "../constants";
 import { JwtWrapper } from "../wrappers/jwt.wrapper";
-import OtpService from "../routes/otp.service";
 import OtpRepository from "../repositories/otp.repository";
 import { OtpWrapper } from "../wrappers/otp.wrapper";
 import { OtpMailer } from "../wrappers/otp-mail.wrapper";
+import { isValidObjectId, ObjectId } from "mongoose";
 
 export default class UserService {
     userRepository: UserRepository;
@@ -157,12 +157,91 @@ export default class UserService {
         }
 
         const isOtpValid = await this.otpRepository.findOtpByEmail(email);
-        if(!isOtpValid || !(isOtpValid.otpExpiration < Date.now())) {
-            throw new ApiError(StatusHelper.error401Unauthorized, 'otp is invalid');
+        if(!isOtpValid){
+            throw new ApiError(StatusHelper.error404NotFound, 'email is invalid')
+        }
+
+        if(otp !== isOtpValid.otp){
+            throw new ApiError(StatusHelper.error401Unauthorized, 'Invalid otp')
+        }
+
+        if(!(Date.now()+0 < isOtpValid.otpExpiration)){
+            throw new ApiError(StatusHelper.error401Unauthorized, 'otp is expired')
         }
 
         const token = JwtWrapper.sign({email}, ConstantHelper.JWT_SECRET_KEY);
 
         return token;
     }
+
+    async resetPassword(token: string, newPassword: string, confirmPassword: string){
+        if(!token){
+            throw new ApiError(StatusHelper.error404NotFound, 'token is required')
+        }
+
+        if(!newPassword || !confirmPassword){
+            throw new ApiError(StatusHelper.error400BadRequest, 'All fields are required, {newPassword, confirmPassword}')
+        }
+
+        if(newPassword !== confirmPassword){
+            throw new ApiError(StatusHelper.error400BadRequest, 'Password and confirmPassword values are different')
+        }
+
+        const decodedToken = JwtWrapper.verify(token, ConstantHelper.JWT_SECRET_KEY);
+        if(!decodedToken || typeof decodedToken === 'string'){
+            throw new ApiError(StatusHelper.error401Unauthorized, 'Invalid token')
+        }
+
+        const { email } = decodedToken as {email: string};
+        const user: any = await this.userRepository.findUserByEmail(email);
+
+        const hashed = await BcryptWrapper.hash(newPassword);
+
+        const updatedUser = await this.userRepository.updateUserPasswordById(user._id, hashed);
+
+        return updatedUser
+    }
+
+    async deleteUser(user: any, id: any){
+        const loggedInUser = user;
+        if(loggedInUser.role !== 'admin'){
+            throw new ApiError(StatusHelper.error403Forbidden, 'only admin can access this route')
+        }
+
+        if(!isValidObjectId(id)){
+            throw new ApiError(StatusHelper.error400BadRequest, 'User id not valid');
+        }
+
+        const userDetails: any = await this.userRepository.findUserById(id);
+        if(!userDetails){
+            throw new ApiError(StatusHelper.error404NotFound, 'user with this id not found')
+        }
+
+        // delete the user
+        await this.userRepository.deleteUserById(id);
+
+        return {email: userDetails.email}
+    }
+
+    async getAllUser(user: any, pageNo: any){
+        const loggedInUser = user;
+        // check whether the logged in user is admin or not
+        if(loggedInUser.role !== 'admin'){
+            throw new ApiError(StatusHelper.error403Forbidden, 'only admin can access this route')
+        }
+
+        const page: number = Number(pageNo) || 1;
+        const perPage = 3;
+        const totalUsers = await this.userRepository.countTotalUsers();
+        const totalPages = Math.ceil(totalUsers / perPage);
+
+        if(pageNo > totalPages){
+            throw new ApiError(StatusHelper.error400BadRequest, `page value exceed the total page count, Total pages= ${totalPages}`)
+        }
+
+        const users = await this.userRepository.allUsersWithPagination(page, perPage);
+
+        return {users, page, totalPages}
+    }
+
 }

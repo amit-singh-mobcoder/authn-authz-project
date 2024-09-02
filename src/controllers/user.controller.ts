@@ -84,7 +84,34 @@ export default class UserController {
             const token = await this.userServices.verifyOtp(req.body.email, req.body.otp);
             return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, token, 'Otp verified successfully'))
         } catch (error) {
-            
+            next(error)
+        }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction){
+        try {
+            const updatedUser = await this.userServices.resetPassword(req.params.token, req.body.newPassword, req.body.confirmPassword);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok,{}, `${updatedUser?.name.firstName} your account password reset successfully`))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async deleteUser(req: Request, res: Response, next: NextFunction){
+        try {
+            const deletedUser = await this.userServices.deleteUser(req.user, req.params.userId);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, {}, `Account with email: ${deletedUser.email} deleted successfully`) )
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getAllUsers(req: Request, res: Response, next: NextFunction){
+        try {
+            const users = await this.userServices.getAllUser(req.user, req.query.page);
+            return res.status(StatusHelper.status200Ok).json(ApiResponse.create(StatusHelper.status200Ok, users, 'All users fetched successfully'))
+        } catch (error) {
+            next(error)
         }
     }
 }

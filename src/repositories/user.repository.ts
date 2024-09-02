@@ -27,4 +27,17 @@ export default class UserRepository {
     const updatedUser = await UserModel.findByIdAndUpdate(id, {password: newPassword});
     return updatedUser;
   }
+
+  async deleteUserById(id: ObjectId){
+    await UserModel.findByIdAndDelete(id);
+  }
+
+  async countTotalUsers(){
+    return await UserModel.countDocuments();
+  }
+
+  async allUsersWithPagination(page: number, perPage: number){
+    const users = await UserModel.find().skip((page - 1) * perPage).limit(perPage).exec();
+    return users;
+  }
 }

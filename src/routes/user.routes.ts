@@ -34,7 +34,7 @@ import UserService from '../services/user.service';
 import UserRepository from '../repositories/user.repository';
 import UserController from '../controllers/user.controller';
 import OtpRepository from '../repositories/otp.repository';
-import OtpService from './otp.service';
+
 
 const otpRepository = new OtpRepository()
 const userRepository = new UserRepository();
@@ -52,12 +52,12 @@ router.route('/change-password').patch(verifyJWT, userController.changePassword.
 router.route('/forgot-password').post(userController.forgotPassword.bind(userController));
 
 router.route('/verify-otp').post(userController.verifyOtp.bind(userController));
-router.route('/reset-password/:token').patch(resetPassword);
+router.route('/reset-password/:token').patch(userController.resetPassword.bind(userController));
 
 
 
 // admin protected routes
-router.route('/').get(verifyJWT, getAllUser);
-router.route('/delete/:userId').post(verifyJWT, deleteUser);
+router.route('/').get(verifyJWT, userController.getAllUsers.bind(userController));
+router.route('/delete/:userId').post(verifyJWT, userController.deleteUser.bind(userController));
 
 export default router;
