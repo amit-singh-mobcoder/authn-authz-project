@@ -7,11 +7,13 @@ import cookieParser from 'cookie-parser'
 import UserController from './controllers/user.controller';
 import UserService from './services/user.service';
 import UserRepository from './repositories/user.repository';
+import {loggerMiddleware} from './middlewares/logger.middleware'
 
 const app : Application = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json())
+app.use(loggerMiddleware)
 
 
 import UserRoutes from './routes/user.routes'
